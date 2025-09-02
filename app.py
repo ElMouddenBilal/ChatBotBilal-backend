@@ -10,7 +10,14 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Inicializar Flask
 app = Flask(__name__)
-CORS(app)  # Permitir llamadas desde React
+CORS(app, resources={r"/*": {"origins": "*"}})  # Abrir CORS para cualquier frontend
+
+# =========================
+# RUTA RAÍZ
+# =========================
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"status": "✅ ChatBot Bilal backend activo"})
 
 # =========================
 # CONTEXTO DEL CHATBOT
@@ -156,21 +163,25 @@ def chat():
     # Guardar mensaje del usuario
     messages.append({"role": "user", "content": user_input})
 
-    # Respuesta desde OpenAI
-    response = openai.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages
-    )
+    try:
+        # Respuesta desde OpenAI
+        response = openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages
+        )
 
-    bot_reply = response.choices[0].message.content
+        bot_reply = response.choices[0].message.content
 
-    # Guardar respuesta en el historial
-    messages.append({"role": "assistant", "content": bot_reply})
+        # Guardar respuesta en el historial
+        messages.append({"role": "assistant", "content": bot_reply})
 
-    return jsonify({"reply": bot_reply})
+        return jsonify({"reply": bot_reply})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # =========================
 # MAIN
 # =========================
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
+
