@@ -10,11 +10,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Inicializar Flask
 app = Flask(__name__)
-CORS(app, resources={
-    r"/chat": {
-        "origins": ["https://chat-bot-bilal-frontend.vercel.app/"]
-    }
-})
+CORS(app, resources={r"/chat": {"origins": ["https://chat-bot-bilal-frontend.vercel.app"]}})
+
 # =========================
 # RUTA RAÍZ
 # =========================
