@@ -2,11 +2,11 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from openai import OpenAI
+import openai
 
 # Cargar variables de entorno
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Inicializar Flask
 app = Flask(__name__)
@@ -157,7 +157,7 @@ def chat():
     messages.append({"role": "user", "content": user_input})
 
     # Respuesta desde OpenAI
-    response = client.chat.completions.create(
+    response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages
     )
