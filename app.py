@@ -2,22 +2,15 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-import openai
+from openai import OpenAI
 
 # Cargar variables de entorno
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Inicializar Flask
 app = Flask(__name__)
-CORS(app, resources={r"/chat": {"origins": "https://chat-bot-bilal-frontend.vercel.app"}})
-
-# =========================
-# RUTA RAÍZ
-# =========================
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({"status": "✅ ChatBot Bilal backend activo"})
+CORS(app)
 
 # =========================
 # CONTEXTO DEL CHATBOT
@@ -156,16 +149,16 @@ messages = [{"role": "system", "content": system_prompt}]
 # =========================
 @app.route("/chat", methods=["POST"])
 def chat():
-    user_input = request.json.get("message")
-    if not user_input:
-        return jsonify({"error": "No message provided"}), 400
-
-    # Guardar mensaje del usuario
-    messages.append({"role": "user", "content": user_input})
-
     try:
+        user_input = request.json.get("message")
+        if not user_input:
+            return jsonify({"error": "No message provided"}), 400
+
+        # Guardar mensaje del usuario
+        messages.append({"role": "user", "content": user_input})
+
         # Respuesta desde OpenAI
-        response = openai.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=messages
         )
@@ -176,12 +169,13 @@ def chat():
         messages.append({"role": "assistant", "content": bot_reply})
 
         return jsonify({"reply": bot_reply})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 # =========================
 # MAIN
 # =========================
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
-
